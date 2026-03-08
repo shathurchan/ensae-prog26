@@ -55,7 +55,44 @@ class Network:
         """
         Builds an object of type Graph from the network, by ignoring the fatigue coefficient. 
         """
-        # TODO: implement the method
-        raise NotImplementedError
+        # P1.Q1 Selects the keys of the _roads dictionary, adds the nodes to the graph by removing the fatigue
+        edges = {}
+        for keys, values in self._roads.items():
+            edges[keys] = [(v, d) for (v, d, fatigue) in values]
+        return Graph(edges)
 
 
+    def build_extended_graph(self):
+        """
+        Builds an extended graph using the network, by implementing the fatigue coefficients as additional vertices in three dimensions.
+        """
+        # P1.Q2 Generates a graph with way more nodes adapting to multiple fatigue coefficients. The maximum fatigue to go up to is
+        # F_max, it is determined using the data present in the network class. The function generates multiple copies of the same graph with fatigue coefficients up
+        # to F_max copies. The graph_shortest_path function will operate on tuples to reach the best path given some initial and termnial
+        # fatigue.
+        max_fatigue = 0
+        for v in self._roads:
+            for (_, _, fatigue) in self._roads[v]:
+                max_fatigue = max(max_fatigue, fatigue)
+
+        #F_max is the maximum fatigue that can possibly be reached while going through the graph
+        F_max = (len(self._roads) - 1) * max_fatigue
+        print(F_max)
+
+        extended_edges = {}
+        for v in self._roads:
+            for F in range(F_max + 1):
+                extended_edges[(v, F)] = []
+
+        for v in self._roads:
+            for (w, length, fatigue) in self._roads[v]:
+                for F in range(F_max + 1):
+                    new_F = F + fatigue
+                    if new_F <= F_max:
+                        cost = length * (1 + F)
+                        extended_edges[(v, F)].append(((w, new_F), cost))
+
+        return Graph(extended_edges)
+    
+    def build_implicit_graph(self):
+        return GraphImplicit(self)
