@@ -2,7 +2,7 @@
 Module network.py
 Contient la classe Network qui représente l'environnement (réseau de routes).
 """
-from graph import Graph, GraphImplicit, RestedGraph
+from graph import Graph, GraphImplicit
 
 
 class Network:

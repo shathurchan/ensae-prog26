@@ -1,6 +1,6 @@
 """
 Module graph.py
-Contient les classes Graph, GraphImplicit et RestedGraph.
+Contient les classes Graph et GraphImplicit.
 """
 import heapq
 from itertools import count
@@ -215,93 +215,6 @@ class GraphImplicit(Graph):
             return float("inf"), []
 
         # Reconstruction du chemin
-        chemin = []
-        etat = etat_arrivee
-        while etat is not None:
-            chemin.append(etat)
-            etat = parent[etat]
-        chemin.reverse()
-        return dist[etat_arrivee], chemin
-
-
-class RestedGraph(GraphImplicit):
-    """
-    Extension : graphe implicite avec la possibilité de faire UNE pause.
-    La pause est gratuite (coût = 0) et remet la fatigue à zéro.
-    Elle ne peut être utilisée qu'une seule fois.
-
-    Un état est un triplet (noeud, fatigue, repos_utilise) où repos_utilise ∈ {0, 1}.
-    """
-
-    def neighbours(self, etat):
-        """
-        Voisins normaux, plus l'option de faire une pause sur place
-        si elle n'a pas encore été utilisée.
-        """
-        noeud, fatigue, repos_utilise = etat
-        voisins = []
-
-        for (suivant, longueur, fatigue_arete) in self.reseau._roads.get(noeud, []):
-            nouvelle_fatigue = fatigue + fatigue_arete
-            cout = longueur * (1 + fatigue)
-            voisins.append(((suivant, nouvelle_fatigue, repos_utilise), cout))
-
-        # Option : faire une pause ici (fatigue -> 0, coût = 0)
-        if repos_utilise == 0:
-            voisins.append(((noeud, 0, 1), 0))
-
-        return voisins
-
-    def _heuristique(self, etat):
-        noeud, fatigue, _ = etat
-        return self.min_dist.get(noeud, float("inf")) * (1 + fatigue)
-
-    def noeud_pause(self, chemin):
-        """Retourne le noeud où la pause a été effectuée dans le chemin."""
-        for i in range(1, len(chemin)):
-            _, _, repos_avant = chemin[i - 1]
-            _, _, repos_apres = chemin[i]
-            if repos_avant == 0 and repos_apres == 1:
-                return chemin[i - 1][0]
-        return None
-
-    def shortest_path(self, depart, arrivee, avec_astar=False):
-        """
-        Dijkstra sur le graphe avec pause.
-        Retourne (distance_min, chemin) où chemin est une liste
-        d'états (noeud, fatigue, repos_utilise).
-        """
-        etat_init = (depart, 0, 0)
-        cpt = count()
-        dist = {etat_init: 0}
-        parent = {etat_init: None}
-        tas = [(0, next(cpt), etat_init)]
-        visites = set()
-
-        etat_arrivee = None
-
-        while tas:
-            _, _, etat = heapq.heappop(tas)
-            if etat in visites:
-                continue
-            visites.add(etat)
-
-            noeud, fatigue, repos_utilise = etat
-            if noeud == arrivee:
-                etat_arrivee = etat
-                break
-
-            for etat_suivant, cout in self.neighbours(etat):
-                nouveau_temps = dist[etat] + cout
-                if etat_suivant not in dist or nouveau_temps < dist[etat_suivant]:
-                    dist[etat_suivant] = nouveau_temps
-                    parent[etat_suivant] = etat
-                    h = self._heuristique(etat_suivant) if avec_astar else 0
-                    heapq.heappush(tas, (nouveau_temps + h, next(cpt), etat_suivant))
-
-        if etat_arrivee is None:
-            return float("inf"), []
-
         chemin = []
         etat = etat_arrivee
         while etat is not None:

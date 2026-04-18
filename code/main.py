@@ -1,11 +1,10 @@
 """
 main.py
-Point d'entrée du programme : charge un réseau, lance un algorithme de plus
-court chemin, et propose de trouver le point de repos optimal (extension).
+Point d'entrée du programme : charge un réseau et lance un algorithme de plus
+court chemin.
 """
 import time
 from network import Network
-from graph import RestedGraph
 
 # Fichiers d'exemples disponibles
 fichiers = [
@@ -50,20 +49,3 @@ fin = time.time()
 print(f"\nDistance minimale : {distance}")
 print(f"Chemin : {chemin}")
 print(f"Temps de calcul : {fin - debut:.4f} s")
-
-# --- Extension : point de repos optimal ---
-rep = input("\nVoulez-vous trouver le meilleur endroit pour faire une pause ? (o/n) : ")
-if rep == "o":
-    graphe_repos = RestedGraph(reseau)
-    graphe_repos.precalculer_distances(reseau.end)
-
-    debut = time.time()
-    dist_repos, chemin_repos = graphe_repos.shortest_path(
-        reseau.start, reseau.end, avec_astar=True
-    )
-    fin = time.time()
-
-    pause = graphe_repos.noeud_pause(chemin_repos)
-    print(f"\nDistance avec pause : {dist_repos}")
-    print(f"Meilleur endroit pour la pause : {pause}")
-    print(f"Temps de calcul : {fin - debut:.4f} s")
